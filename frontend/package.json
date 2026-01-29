@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://shakeeb-sa.github.io/multi-links",
+  "homepage": "https://shakeeb-sa.github.io/multi-links", 
   "scripts": {
     "dev": "vite",
     "build": "vite build",
