@@ -65,7 +65,9 @@ if (process.env.NODE_SERVER === 'local') {
 module.exports = app; // This is required for Vercel
 
 
-// Delete a snippet
+// ... (Your other GET/POST routes are up here) ...
+
+// 1. Move the Delete route ABOVE the export
 app.delete('/api/snippets/:id', auth, async (req, res) => {
     try {
         const snippet = await Snippet.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
@@ -75,3 +77,17 @@ app.delete('/api/snippets/:id', auth, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// 2. Add a basic home route for testing
+app.get('/', (req, res) => {
+    res.send('Multi-Links API is running...');
+});
+
+// 3. Keep the local listen logic
+if (process.env.NODE_SERVER === 'local') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+// 4. THE EXPORT MUST BE THE VERY LAST LINE
+module.exports = app;
