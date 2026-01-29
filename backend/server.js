@@ -19,12 +19,14 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("MongoDB Connected"))
     .catch(err => console.error("MongoDB Connection Error:", err));
 
-// --- 1. BASE ROUTE (To verify API is live) ---
+// --- ROUTES ---
+
+// 1. Home Route (To test if Vercel is working)
 app.get('/', (req, res) => {
-    res.send('Multi-Links API is running successfully.');
+    res.status(200).send('Multi-Links API is live and running.');
 });
 
-// --- 2. AUTH ROUTES ---
+// 2. Auth Routes
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -51,7 +53,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// --- 3. SNIPPET ROUTES ---
+// 3. Snippet Routes
 app.post('/api/snippets', auth, async (req, res) => {
     try {
         const { title, content } = req.body;
@@ -82,12 +84,12 @@ app.delete('/api/snippets/:id', auth, async (req, res) => {
     }
 });
 
-// --- 4. EXPORT / LISTEN ---
-// Only listen on a port if running locally
+// --- EXPORT ---
+// IMPORTANT: Only listen locally
 if (process.env.NODE_SERVER === 'local') {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running locally on port ${PORT}`));
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
-// Export the app for Vercel
+// The ONLY export statement, at the very bottom
 module.exports = app;
