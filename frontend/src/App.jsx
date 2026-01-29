@@ -28,7 +28,7 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router basename="/link-converter">
+      <Router basename="/multi-links">
         <div className="app-wrapper">
           {/* Header now receives sidebar controls */}
           <Header 
