@@ -1,12 +1,28 @@
-import React, { useState, useRef } from 'react';
-import { FaLink, FaBroom, FaEraser, FaCopy } from 'react-icons/fa';
+import React, { useState, useRef, useContext, useEffect } from 'react';
+import { FaLink, FaBroom, FaEraser, FaCopy, FaCloudUploadAlt } from 'react-icons/fa';
 import { cleanContent, generateFormats, isValidURL } from '../utils/converter';
+import { AuthContext } from '../context/AuthContext';
+import API from '../api'; // Using the pre-configured API utility
 
-const ConverterSection = ({ id, showToast }) => {
+const ConverterSection = ({ id, showToast, loadContent }) => {
   const [formats, setFormats] = useState(null);
   const [activeTab, setActiveTab] = useState('html');
   const [linkCount, setLinkCount] = useState(0);
   const editorRef = useRef(null);
+  
+  const { token } = useContext(AuthContext);
+
+  // Effect to load content from the Vault (History Sidebar)
+  useEffect(() => {
+    // Check if loadContent exists and specifically target Section 1
+    if (id === 1 && loadContent?.text && editorRef.current) {
+      editorRef.current.innerHTML = loadContent.text;
+      handleInput(); // Re-generate formats (Markdown, HTML, etc.)
+      
+      // Scroll to top of editor if it's long content
+      editorRef.current.scrollTop = 0;
+    }
+  }, [loadContent, id]); // Added id to dependencies
 
   const stripFragments = (str) => str.replace(/<!--StartFragment-->|<!--EndFragment-->/g, "");
 
@@ -39,6 +55,30 @@ const ConverterSection = ({ id, showToast }) => {
     }
     document.execCommand('insertHTML', false, contentToInsert);
     handleInput();
+  };
+
+  const saveSnippet = async () => {
+    if (!token) {
+        showToast("Please login to save snippets", "info");
+        return;
+    }
+    if (!editorRef.current?.innerHTML || editorRef.current.innerHTML === "<br>") {
+        showToast("Editor is empty", "info");
+        return;
+    }
+
+    const title = prompt("Enter a title for this snippet:");
+    if (!title) return;
+
+    try {
+        await API.post('/snippets', { 
+          title, 
+          content: editorRef.current.innerHTML 
+        });
+        showToast("Saved to Vault", "success");
+    } catch (err) {
+        showToast("Failed to save", "error");
+    }
   };
 
   const makeLink = () => {
@@ -92,6 +132,11 @@ const ConverterSection = ({ id, showToast }) => {
             <FaBroom size={12} /> Clean
           </button>
           
+          {/* New Save to Vault Button */}
+          <button className="btn-secondary" onClick={saveSnippet} title="Save to History">
+            <FaCloudUploadAlt size={14} /> Save
+          </button>
+
           {/* Link Counter Badge */}
           {linkCount > 0 && (
             <span style={{ 
