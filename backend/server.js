@@ -1,5 +1,4 @@
 require('dotenv').config();
-console.log("Database URI from ENV:", process.env.MONGO_URI);
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,16 +9,22 @@ const User = require('./models/User');
 const Snippet = require('./models/Snippet');
 
 const app = express();
+
+// Middleware
 app.use(express.json());
 app.use(cors());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("MongoDB Connected"))
-    .catch(err => console.log(err));
+    .catch(err => console.error("MongoDB Connection Error:", err));
 
-// --- AUTH ROUTES ---
+// --- 1. BASE ROUTE (To verify API is live) ---
+app.get('/', (req, res) => {
+    res.send('Multi-Links API is running successfully.');
+});
 
+// --- 2. AUTH ROUTES ---
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -27,47 +32,46 @@ app.post('/api/register', async (req, res) => {
         const user = new User({ username, email, password: hashedPassword });
         await user.save();
         res.status(201).json({ message: "User created" });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
 });
 
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.status(400).json({ message: "Invalid Credentials" });
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(400).json({ message: "Invalid Credentials" });
+        }
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.json({ token, user: { id: user._id, username: user.username } });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user._id, username: user.username } });
 });
 
-// --- SNIPPET ROUTES ---
-
+// --- 3. SNIPPET ROUTES ---
 app.post('/api/snippets', auth, async (req, res) => {
     try {
         const { title, content } = req.body;
         const snippet = new Snippet({ userId: req.user.id, title, content });
         await snippet.save();
         res.json(snippet);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
 });
 
 app.get('/api/snippets', auth, async (req, res) => {
-    const snippets = await Snippet.find({ userId: req.user.id }).sort({ createdAt: -1 });
-    res.json(snippets);
+    try {
+        const snippets = await Snippet.find({ userId: req.user.id }).sort({ createdAt: -1 });
+        res.json(snippets);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// Replace app.listen with this:
-if (process.env.NODE_SERVER === 'local') {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
-
-module.exports = app; // This is required for Vercel
-
-
-// ... (Your other GET/POST routes are up here) ...
-
-// 1. Move the Delete route ABOVE the export
 app.delete('/api/snippets/:id', auth, async (req, res) => {
     try {
         const snippet = await Snippet.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
@@ -78,16 +82,12 @@ app.delete('/api/snippets/:id', auth, async (req, res) => {
     }
 });
 
-// 2. Add a basic home route for testing
-app.get('/', (req, res) => {
-    res.send('Multi-Links API is running...');
-});
-
-// 3. Keep the local listen logic
+// --- 4. EXPORT / LISTEN ---
+// Only listen on a port if running locally
 if (process.env.NODE_SERVER === 'local') {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`Server running locally on port ${PORT}`));
 }
 
-// 4. THE EXPORT MUST BE THE VERY LAST LINE
+// Export the app for Vercel
 module.exports = app;
