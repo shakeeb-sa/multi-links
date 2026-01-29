@@ -16,22 +16,18 @@ app.use(cors());
 
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI;
-if (!MONGO_URI) {
-    console.error("CRITICAL: MONGO_URI is not defined in Environment Variables!");
-}
-
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("MongoDB Connected Successfully"))
-    .catch(err => console.error("MongoDB Connection Error:", err));
+    .then(() => console.log("MongoDB Connected"))
+    .catch(err => console.error("MongoDB Error:", err));
 
 // --- ROUTES ---
 
-// Root route - This MUST work for the 404 to go away
+// 1. Health Check (To fix the Vercel 404)
 app.get('/', (req, res) => {
     res.status(200).send('<h1>Multi-Links API</h1><p>Status: Online</p>');
 });
 
-// Auth Routes
+// 2. Auth Routes
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -54,7 +50,7 @@ app.post('/api/login', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Snippet Routes
+// 3. Snippet Routes
 app.get('/api/snippets', auth, async (req, res) => {
     try {
         const snippets = await Snippet.find({ userId: req.user.id }).sort({ createdAt: -1 });
@@ -79,10 +75,10 @@ app.delete('/api/snippets/:id', auth, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- LISTEN / EXPORT ---
+// --- EXPORT / LISTEN ---
 if (process.env.NODE_SERVER === 'local') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Local server on port ${PORT}`));
 }
 
-module.exports = app;
+module.exports = app; // MUST BE THE LAST LINE
