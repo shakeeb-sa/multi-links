@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// Changed BrowserRouter to HashRouter
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -28,7 +29,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router basename="/multi-links">
+      {/* Basename is removed because HashRouter handles the path after the # symbol */}
+      <Router>
         <div className="app-wrapper">
           {/* Header now receives sidebar controls */}
           <Header 
@@ -77,21 +79,21 @@ function App() {
           <Footer />
 
           {/* New History Sidebar Integration */}
-<HistorySidebar 
-  isOpen={isSidebarOpen} 
-  onClose={() => setIsSidebarOpen(false)} 
-  showToast={triggerToast}
-  onSelect={(content) => {
-    // We wrap the content in an object with a timestamp/ID 
-    // to force the child component to see a "new" prop every time.
-    setLoadContent({ 
-      text: content, 
-      version: Date.now() 
-    }); 
-    setIsSidebarOpen(false);
-    triggerToast("Loaded from vault", "success");
-  }}
-/>
+          <HistorySidebar 
+            isOpen={isSidebarOpen} 
+            onClose={() => setIsSidebarOpen(false)} 
+            showToast={triggerToast}
+            onSelect={(content) => {
+              // We wrap the content in an object with a timestamp/ID 
+              // to force the child component to see a "new" prop every time.
+              setLoadContent({ 
+                text: content, 
+                version: Date.now() 
+              }); 
+              setIsSidebarOpen(false);
+              triggerToast("Loaded from vault", "success");
+            }}
+          />
 
           {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         </div>
