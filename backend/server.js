@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const auth = require('./middleware/auth');
 const User = require('./models/User');
 const Snippet = require('./models/Snippet');
-const Project = require('./models/Project'); // New Model imported
+const Project = require('./models/Project');
 
 const app = express();
 
@@ -15,16 +15,27 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- 2. MongoDB Connection ---
+// --- 2. MongoDB Connection (Optimized for Vercel) ---
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
     console.error("CRITICAL ERROR: MONGO_URI is not defined in environment variables.");
 }
 
-mongoose.connect(MONGO_URI)
+// Connection options to handle serverless timeouts
+const connectionOptions = {
+    serverSelectionTimeoutMS: 10000, // 10 seconds timeout for finding a server
+    socketTimeoutMS: 45000,         // Close sockets after 45 seconds
+    family: 4                       // Force IPv4 (helps with some network configurations)
+};
+
+mongoose.connect(MONGO_URI, connectionOptions)
     .then(() => console.log("MongoDB Connected successfully"))
-    .catch(err => console.error("MongoDB Connection Error:", err));
+    .catch(err => {
+        console.error("MongoDB Connection Error Details:");
+        console.error("Message:", err.message);
+        console.error("Reason:", err.reason ? JSON.stringify(err.reason) : 'No specific reason provided');
+    });
 
 // --- 3. ROUTES ---
 
@@ -52,7 +63,8 @@ app.post('/api/register', async (req, res) => {
         await user.save();
         res.status(201).json({ message: "User created successfully" });
     } catch (err) { 
-        res.status(500).json({ error: "Server error during registration" }); 
+        console.error("Reg Error:", err);
+        res.status(500).json({ error: "Server error during registration", details: err.message }); 
     }
 });
 
@@ -66,18 +78,17 @@ app.post('/api/login', async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         res.json({ token, user: { id: user._id, username: user.username } });
     } catch (err) {
-        res.status(500).json({ error: "Server error during login" });
+        console.error("Login Error:", err);
+        res.status(500).json({ error: "Server error during login", details: err.message });
     }
 });
 
 // --- PROJECT (FOLDER) ROUTES ---
 
-// Create a new Folder
 app.post('/api/projects', auth, async (req, res) => {
     try {
         const { name } = req.body;
         if (!name) return res.status(400).json({ message: "Folder name is required" });
-        
         const project = new Project({ name, userId: req.user.id });
         await project.save();
         res.json(project);
@@ -86,7 +97,6 @@ app.post('/api/projects', auth, async (req, res) => {
     }
 });
 
-// Get all Folders
 app.get('/api/projects', auth, async (req, res) => {
     try {
         const projects = await Project.find({ userId: req.user.id }).sort({ createdAt: -1 });
@@ -96,14 +106,10 @@ app.get('/api/projects', auth, async (req, res) => {
     }
 });
 
-// Delete a Folder (and all snippets inside it)
 app.delete('/api/projects/:id', auth, async (req, res) => {
     try {
-        // First delete snippets belonging to this project
         await Snippet.deleteMany({ projectId: req.params.id, userId: req.user.id });
-        // Then delete the project itself
         const project = await Project.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
-        
         if (!project) return res.status(404).json({ message: "Folder not found" });
         res.json({ message: "Folder and all its contents deleted" });
     } catch (err) {
@@ -111,9 +117,8 @@ app.delete('/api/projects/:id', auth, async (req, res) => {
     }
 });
 
-// --- SNIPPET ROUTES (Updated for Folders & Search) ---
+// --- SNIPPET ROUTES ---
 
-// Get snippets (Supports filtering by projectId via query: /api/snippets?projectId=ID)
 app.get('/api/snippets', auth, async (req, res) => {
     try {
         const filter = { userId: req.user.id };
@@ -127,36 +132,25 @@ app.get('/api/snippets', auth, async (req, res) => {
     }
 });
 
-// Global Dynamic Search across all folders
 app.get('/api/snippets/search', auth, async (req, res) => {
     try {
         const { query } = req.query;
         if (!query) return res.json([]);
-
-        // Finds snippets where title contains the query string (case-insensitive)
         const snippets = await Snippet.find({
             userId: req.user.id,
             title: { $regex: query, $options: 'i' }
-        }).populate('projectId', 'name'); // Populates folder name for display
-
+        }).populate('projectId', 'name');
         res.json(snippets);
     } catch (err) {
         res.status(500).json({ error: "Search failed" });
     }
 });
 
-// Save a new snippet (Requires projectId)
 app.post('/api/snippets', auth, async (req, res) => {
     try {
         const { title, content, projectId } = req.body;
-        if (!projectId) return res.status(400).json({ message: "A folder (projectId) must be selected" });
-
-        const snippet = new Snippet({ 
-            userId: req.user.id, 
-            projectId, // Linked to folder
-            title, 
-            content 
-        });
+        if (!projectId) return res.status(400).json({ message: "A folder must be selected" });
+        const snippet = new Snippet({ userId: req.user.id, projectId, title, content });
         await snippet.save();
         res.json(snippet);
     } catch (err) { 
@@ -164,7 +158,6 @@ app.post('/api/snippets', auth, async (req, res) => {
     }
 });
 
-// Delete a snippet
 app.delete('/api/snippets/:id', auth, async (req, res) => {
     try {
         const snippet = await Snippet.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
