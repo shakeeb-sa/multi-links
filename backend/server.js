@@ -15,26 +15,31 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- 2. MongoDB Connection (Optimized for Vercel) ---
+// --- 2. MongoDB Connection ---
 const MONGO_URI = process.env.MONGO_URI;
+
+// Connection options for serverless stability
+const options = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    connectTimeoutMS: 30000,
+};
+
+mongoose.connect(MONGO_URI, options)
+    .then(() => console.log("MongoDB Connected successfully"))
+    .catch(err => {
+        console.error("DB Connection Error:", err.message);
+    });
 
 if (!MONGO_URI) {
     console.error("CRITICAL ERROR: MONGO_URI is not defined in environment variables.");
 }
 
-// Connection options to handle serverless timeouts
-const connectionOptions = {
-    serverSelectionTimeoutMS: 10000, // 10 seconds timeout for finding a server
-    socketTimeoutMS: 45000,         // Close sockets after 45 seconds
-    family: 4                       // Force IPv4 (helps with some network configurations)
-};
-
-mongoose.connect(MONGO_URI, connectionOptions)
+// Simplified connection logic for Atlas + Vercel
+mongoose.connect(MONGO_URI)
     .then(() => console.log("MongoDB Connected successfully"))
     .catch(err => {
-        console.error("MongoDB Connection Error Details:");
-        console.error("Message:", err.message);
-        console.error("Reason:", err.reason ? JSON.stringify(err.reason) : 'No specific reason provided');
+        console.error("MongoDB Connection Error:", err.message);
     });
 
 // --- 3. ROUTES ---
@@ -63,7 +68,6 @@ app.post('/api/register', async (req, res) => {
         await user.save();
         res.status(201).json({ message: "User created successfully" });
     } catch (err) { 
-        console.error("Reg Error:", err);
         res.status(500).json({ error: "Server error during registration", details: err.message }); 
     }
 });
@@ -78,7 +82,6 @@ app.post('/api/login', async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         res.json({ token, user: { id: user._id, username: user.username } });
     } catch (err) {
-        console.error("Login Error:", err);
         res.status(500).json({ error: "Server error during login", details: err.message });
     }
 });
