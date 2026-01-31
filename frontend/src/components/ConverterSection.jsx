@@ -57,7 +57,7 @@ const ConverterSection = ({ id, showToast, loadContent }) => {
     handleInput();
   };
 
-  const saveSnippet = async () => {
+const saveSnippet = async () => {
     if (!token) {
         showToast("Please login to save snippets", "info");
         return;
@@ -67,19 +67,46 @@ const ConverterSection = ({ id, showToast, loadContent }) => {
         return;
     }
 
-    const title = prompt("Enter a title for this snippet:");
-    if (!title) return;
-
     try {
+        // 1. Fetch Projects to show in selection
+        const { data: projects } = await API.get('/projects');
+        
+        if (projects.length === 0) {
+            const createNew = window.confirm("No folders found. Create your first folder?");
+            if (createNew) {
+                const folderName = prompt("Enter folder name (e.g., RotationManager):");
+                if (!folderName) return;
+                const { data: newProj } = await API.post('/projects', { name: folderName });
+                projects.push(newProj);
+            } else {
+                return;
+            }
+        }
+
+        // 2. Simple prompt-based selection for now (to keep it stable)
+        const projectList = projects.map((p, i) => `${i + 1}. ${p.name}`).join('\n');
+        const choice = prompt(`Where to save?\n${projectList}\n\nEnter the number:`);
+        
+        const selectedProject = projects[parseInt(choice) - 1];
+        if (!selectedProject) {
+            showToast("Invalid selection", "error");
+            return;
+        }
+
+        const title = prompt("Enter a title for this snippet:");
+        if (!title) return;
+
         await API.post('/snippets', { 
-          title, 
-          content: editorRef.current.innerHTML 
+            title, 
+            content: editorRef.current.innerHTML,
+            projectId: selectedProject._id // Important: Link to folder
         });
-        showToast("Saved to Vault", "success");
+        
+        showToast(`Saved to ${selectedProject.name}`, "success");
     } catch (err) {
         showToast("Failed to save", "error");
     }
-  };
+};
 
   const makeLink = () => {
     const selection = window.getSelection();

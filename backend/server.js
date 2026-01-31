@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const auth = require('./middleware/auth');
 const User = require('./models/User');
 const Snippet = require('./models/Snippet');
+const Project = require('./models/Project'); // New Model imported
 
 const app = express();
 
@@ -27,11 +28,11 @@ mongoose.connect(MONGO_URI)
 
 // --- 3. ROUTES ---
 
-// Health Check / Root Route (Prevents Vercel 404)
+// Health Check / Root Route
 app.get('/', (req, res) => {
     res.status(200).send(`
         <div style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-            <h1 style="color: #e62b1e;">Multi-Links API</h1>
+            <h1 style="color: #e62b1e;">Multi-Links API V2</h1>
             <p>Status: <span style="color: green;">Online</span></p>
             <p>Environment: ${process.env.NODE_SERVER === 'local' ? 'Local' : 'Production'}</p>
         </div>
@@ -40,63 +41,122 @@ app.get('/', (req, res) => {
 
 // --- AUTH ROUTES ---
 
-// Register
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        
-        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ message: "User already exists" });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({ username, email, password: hashedPassword });
         await user.save();
-        
         res.status(201).json({ message: "User created successfully" });
     } catch (err) { 
         res.status(500).json({ error: "Server error during registration" }); 
     }
 });
 
-// Login
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-        
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(400).json({ message: "Invalid email or password" });
         }
-        
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        
-        res.json({ 
-            token, 
-            user: { id: user._id, username: user.username } 
-        });
+        res.json({ token, user: { id: user._id, username: user.username } });
     } catch (err) {
         res.status(500).json({ error: "Server error during login" });
     }
 });
 
-// --- SNIPPET ROUTES (Protected) ---
+// --- PROJECT (FOLDER) ROUTES ---
 
-// Get all snippets for logged in user
-app.get('/api/snippets', auth, async (req, res) => {
+// Create a new Folder
+app.post('/api/projects', auth, async (req, res) => {
     try {
-        const snippets = await Snippet.find({ userId: req.user.id }).sort({ createdAt: -1 });
-        res.json(snippets);
-    } catch (err) { 
-        res.status(500).json({ error: "Failed to fetch history" }); 
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ message: "Folder name is required" });
+        
+        const project = new Project({ name, userId: req.user.id });
+        await project.save();
+        res.json(project);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to create folder" });
     }
 });
 
-// Save a new snippet
+// Get all Folders
+app.get('/api/projects', auth, async (req, res) => {
+    try {
+        const projects = await Project.find({ userId: req.user.id }).sort({ createdAt: -1 });
+        res.json(projects);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch folders" });
+    }
+});
+
+// Delete a Folder (and all snippets inside it)
+app.delete('/api/projects/:id', auth, async (req, res) => {
+    try {
+        // First delete snippets belonging to this project
+        await Snippet.deleteMany({ projectId: req.params.id, userId: req.user.id });
+        // Then delete the project itself
+        const project = await Project.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+        
+        if (!project) return res.status(404).json({ message: "Folder not found" });
+        res.json({ message: "Folder and all its contents deleted" });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete folder" });
+    }
+});
+
+// --- SNIPPET ROUTES (Updated for Folders & Search) ---
+
+// Get snippets (Supports filtering by projectId via query: /api/snippets?projectId=ID)
+app.get('/api/snippets', auth, async (req, res) => {
+    try {
+        const filter = { userId: req.user.id };
+        if (req.query.projectId) {
+            filter.projectId = req.query.projectId;
+        }
+        const snippets = await Snippet.find(filter).populate('projectId').sort({ createdAt: -1 });
+        res.json(snippets);
+    } catch (err) { 
+        res.status(500).json({ error: "Failed to fetch snippets" }); 
+    }
+});
+
+// Global Dynamic Search across all folders
+app.get('/api/snippets/search', auth, async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) return res.json([]);
+
+        // Finds snippets where title contains the query string (case-insensitive)
+        const snippets = await Snippet.find({
+            userId: req.user.id,
+            title: { $regex: query, $options: 'i' }
+        }).populate('projectId', 'name'); // Populates folder name for display
+
+        res.json(snippets);
+    } catch (err) {
+        res.status(500).json({ error: "Search failed" });
+    }
+});
+
+// Save a new snippet (Requires projectId)
 app.post('/api/snippets', auth, async (req, res) => {
     try {
-        const { title, content } = req.body;
-        const snippet = new Snippet({ userId: req.user.id, title, content });
+        const { title, content, projectId } = req.body;
+        if (!projectId) return res.status(400).json({ message: "A folder (projectId) must be selected" });
+
+        const snippet = new Snippet({ 
+            userId: req.user.id, 
+            projectId, // Linked to folder
+            title, 
+            content 
+        });
         await snippet.save();
         res.json(snippet);
     } catch (err) { 
@@ -117,11 +177,9 @@ app.delete('/api/snippets/:id', auth, async (req, res) => {
 
 // --- 4. EXPORT / LISTEN ---
 
-// Local development listener
 if (process.env.NODE_SERVER === 'local') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`>>> Server running locally on port ${PORT}`));
 }
 
-// Critical for Vercel deployment
 module.exports = app;
