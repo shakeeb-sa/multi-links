@@ -10,55 +10,49 @@ const Snippet = require('./models/Snippet');
 const Project = require('./models/Project');
 
 const app = express();
-
-// --- 1. Middleware ---
 app.use(express.json());
 app.use(cors());
 
-// --- 2. MongoDB Connection ---
+// --- 2. MongoDB Connection Logic (Vercel Stable Pattern) ---
 const MONGO_URI = process.env.MONGO_URI;
 
-// Connection options for serverless stability
-const options = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    connectTimeoutMS: 30000,
+// Disable Mongoose buffering so we don't get "Buffering Timed Out" errors
+mongoose.set('bufferCommands', false);
+
+// Single connection instance
+let isConnected = false;
+
+const connectDB = async () => {
+    if (isConnected) return;
+    
+    try {
+        const db = await mongoose.connect(MONGO_URI, {
+            serverSelectionTimeoutMS: 5000,
+        });
+        isConnected = db.connections[0].readyState;
+        console.log("MongoDB Connected successfully");
+    } catch (err) {
+        console.error("MongoDB Connection Error:", err.message);
+        // Do not throw error here, let the route handle it if DB is missing
+    }
 };
 
-mongoose.connect(MONGO_URI, options)
-    .then(() => console.log("MongoDB Connected successfully"))
-    .catch(err => {
-        console.error("DB Connection Error:", err.message);
-    });
-
-if (!MONGO_URI) {
-    console.error("CRITICAL ERROR: MONGO_URI is not defined in environment variables.");
-}
-
-// Simplified connection logic for Atlas + Vercel
-mongoose.connect(MONGO_URI)
-    .then(() => console.log("MongoDB Connected successfully"))
-    .catch(err => {
-        console.error("MongoDB Connection Error:", err.message);
-    });
+// Middleware to ensure DB is connected before any request
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
 
 // --- 3. ROUTES ---
 
-// Health Check / Root Route
 app.get('/', (req, res) => {
-    res.status(200).send(`
-        <div style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-            <h1 style="color: #e62b1e;">Multi-Links API V2</h1>
-            <p>Status: <span style="color: green;">Online</span></p>
-            <p>Environment: ${process.env.NODE_SERVER === 'local' ? 'Local' : 'Production'}</p>
-        </div>
-    `);
+    res.status(200).send(`<h1>Multi-Links API V2</h1><p>Status: Online</p><p>DB Connected: ${isConnected ? 'Yes' : 'No'}</p>`);
 });
-
-// --- AUTH ROUTES ---
 
 app.post('/api/register', async (req, res) => {
     try {
+        if (!isConnected) return res.status(503).json({ error: "Database not ready. Please try again in a few seconds." });
+        
         const { username, email, password } = req.body;
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ message: "User already exists" });
@@ -68,12 +62,14 @@ app.post('/api/register', async (req, res) => {
         await user.save();
         res.status(201).json({ message: "User created successfully" });
     } catch (err) { 
-        res.status(500).json({ error: "Server error during registration", details: err.message }); 
+        res.status(500).json({ error: "Registration failed", details: err.message }); 
     }
 });
 
 app.post('/api/login', async (req, res) => {
     try {
+        if (!isConnected) return res.status(503).json({ error: "Database not ready. Please try again." });
+
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -82,100 +78,68 @@ app.post('/api/login', async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         res.json({ token, user: { id: user._id, username: user.username } });
     } catch (err) {
-        res.status(500).json({ error: "Server error during login", details: err.message });
+        res.status(500).json({ error: "Login failed", details: err.message });
     }
 });
 
-// --- PROJECT (FOLDER) ROUTES ---
-
+// --- Snippet & Project Routes ---
 app.post('/api/projects', auth, async (req, res) => {
     try {
-        const { name } = req.body;
-        if (!name) return res.status(400).json({ message: "Folder name is required" });
-        const project = new Project({ name, userId: req.user.id });
+        const project = new Project({ name: req.body.name, userId: req.user.id });
         await project.save();
         res.json(project);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to create folder" });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get('/api/projects', auth, async (req, res) => {
     try {
         const projects = await Project.find({ userId: req.user.id }).sort({ createdAt: -1 });
         res.json(projects);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to fetch folders" });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.delete('/api/projects/:id', auth, async (req, res) => {
     try {
         await Snippet.deleteMany({ projectId: req.params.id, userId: req.user.id });
-        const project = await Project.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
-        if (!project) return res.status(404).json({ message: "Folder not found" });
-        res.json({ message: "Folder and all its contents deleted" });
-    } catch (err) {
-        res.status(500).json({ error: "Failed to delete folder" });
-    }
+        await Project.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+        res.json({ message: "Deleted" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
-// --- SNIPPET ROUTES ---
 
 app.get('/api/snippets', auth, async (req, res) => {
     try {
         const filter = { userId: req.user.id };
-        if (req.query.projectId) {
-            filter.projectId = req.query.projectId;
-        }
+        if (req.query.projectId) filter.projectId = req.query.projectId;
         const snippets = await Snippet.find(filter).populate('projectId').sort({ createdAt: -1 });
         res.json(snippets);
-    } catch (err) { 
-        res.status(500).json({ error: "Failed to fetch snippets" }); 
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get('/api/snippets/search', auth, async (req, res) => {
     try {
-        const { query } = req.query;
-        if (!query) return res.json([]);
-        const snippets = await Snippet.find({
-            userId: req.user.id,
-            title: { $regex: query, $options: 'i' }
-        }).populate('projectId', 'name');
+        const snippets = await Snippet.find({ userId: req.user.id, title: { $regex: req.query.query, $options: 'i' } }).populate('projectId');
         res.json(snippets);
-    } catch (err) {
-        res.status(500).json({ error: "Search failed" });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.post('/api/snippets', auth, async (req, res) => {
     try {
         const { title, content, projectId } = req.body;
-        if (!projectId) return res.status(400).json({ message: "A folder must be selected" });
         const snippet = new Snippet({ userId: req.user.id, projectId, title, content });
         await snippet.save();
         res.json(snippet);
-    } catch (err) { 
-        res.status(500).json({ error: "Failed to save snippet" }); 
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.delete('/api/snippets/:id', auth, async (req, res) => {
     try {
-        const snippet = await Snippet.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
-        if (!snippet) return res.status(404).json({ message: "Snippet not found" });
-        res.json({ message: "Snippet deleted successfully" });
-    } catch (err) { 
-        res.status(500).json({ error: "Failed to delete snippet" }); 
-    }
+        await Snippet.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+        res.json({ message: "Deleted" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- 4. EXPORT / LISTEN ---
-
+// --- 4. EXPORT ---
 if (process.env.NODE_SERVER === 'local') {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`>>> Server running locally on port ${PORT}`));
+    app.listen(process.env.PORT || 5000, () => console.log("Local Server Running"));
 }
-
 module.exports = app;
