@@ -44,20 +44,49 @@ function App() {
               {/* Dashboard Route */}
               <Route path="/" element={
                 <>
-                  <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                    <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', color: 'var(--text-main)', fontWeight: '800', letterSpacing: '-1px' }}>
-                      Format links <span style={{ color: 'var(--primary)' }}>instantly.</span>
-                    </h1>
-                    <p style={{ fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-                      Clean, convert, and save hyperlinks for HTML, Markdown, and BBCode.
-                    </p>
-                  </div>
+                  <div style={{ textAlign: 'center', padding: '4rem 0 5rem 0' }}>
+  <div style={{ 
+    display: 'inline-block', 
+    padding: '6px 16px', 
+    background: 'var(--primary-soft)', 
+    color: 'var(--primary)', 
+    borderRadius: '20px', 
+    fontSize: '0.8rem', 
+    fontWeight: '700', 
+    marginBottom: '20px',
+    textTransform: 'uppercase',
+    letterSpacing: '1px'
+  }}>
+    🚀 Version 2.0 Now Live
+  </div>
+  <h1 style={{ 
+    fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', 
+    color: 'var(--text-main)', 
+    fontWeight: '900', 
+    letterSpacing: '-2px',
+    lineHeight: '1.1',
+    marginBottom: '24px'
+  }}>
+    The Professional Link <br />
+    <span style={{ color: 'var(--primary)' }}>Workspace.</span>
+  </h1>
+  <p style={{ 
+    fontSize: '1.25rem', 
+    maxWidth: '650px', 
+    margin: '0 auto', 
+    color: 'var(--text-secondary)',
+    lineHeight: '1.6' 
+  }}>
+    An all-in-one environment to clean, transform, and vault your hyperlinks. Built for content teams who demand speed.
+  </p>
+</div>
                   
                   <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))', 
-                    gap: '24px' 
-                  }}>
+  display: 'grid', 
+  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 550px), 1fr))', 
+  gap: '32px',
+  paddingBottom: '4rem'
+}}>
                     {/* id=1 is the primary section that receives loaded content from the vault */}
                     <ConverterSection id={1} showToast={triggerToast} loadContent={loadContent} />
                     <ConverterSection id={2} showToast={triggerToast} />

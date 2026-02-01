@@ -1,38 +1,39 @@
 /* src/index.css */
 :root {
-  /* Brand Colors */
-  --primary: #e62b1e;      /* Ted Red */
+  /* Brand Colors - Postman/SaaS style */
+  --primary: #e62b1e; 
+  --primary-soft: rgba(230, 43, 30, 0.1);
   --primary-dark: #b81b10;
   
-  /* Neutrals */
-  --bg-app: #f5f7fa;       /* Very subtle cool grey */
+  /* Neutrals - MongoDB/Postman Grey Palette */
+  --bg-app: #f8f9fb;       
   --bg-card: #ffffff;
-  --text-main: #111827;    /* Almost Black */
-  --text-secondary: #6b7280;
-  --border-subtle: #e5e7eb;
-  --border-focus: #d1d5db;
+  --text-main: #060606;    
+  --text-secondary: #5a5a5a;
+  --border-subtle: #e1e4e8;
+  --border-focus: #c2c8d1;
 
-  /* Shadows (The key to "Pro" look) */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* Shadows - Layered for depth */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.08);
   
   /* Layout */
-  --radius-lg: 12px;
-  --radius-sm: 6px;
-  --font-inter: 'Inter', sans-serif;
+  --radius-lg: 10px;
+  --radius-sm: 4px;
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --header-height: 64px;
 }
 
+/* Dark Mode - GitHub/Postman Night palette */
 body.dark-mode {
-  --bg-app: #111111;
-  --bg-card: #1c1c1c;
-  --text-main: #f9fafb;
-  --text-secondary: #9ca3af;
-  --border-subtle: #2d2d2d;
-  --border-focus: #404040;
-  --shadow-sm: none;
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --bg-app: #0d1117;
+  --bg-card: #161b22;
+  --text-main: #f0f6fc;
+  --text-secondary: #8b949e;
+  --border-subtle: #30363d;
+  --border-focus: #58a6ff;
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -113,25 +114,29 @@ body.dark-mode .btn-secondary { background: #2a2a2a; border-color: #333; }
 body.dark-mode .btn-secondary:hover { background: #333; }
 
 /* --- The Converter Card --- */
+/* --- Postman & MongoDB Inspired Workspace --- */
+
 .converter-card {
   background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  border-radius: 16px; /* Softer, more modern radius */
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-subtle);
-  overflow: hidden; /* Contains child elements */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
 }
 
 .converter-card:hover {
   box-shadow: var(--shadow-lg);
-  border-color: var(--border-focus);
+  border-color: var(--primary); /* Subtle brand highlight on hover */
+  transform: translateY(-4px);
 }
 
-/* Toolbar Area */
+/* Toolbar Area - Clean & Functional */
 .toolbar {
-  padding: 12px 16px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-card);
   display: flex;
@@ -139,80 +144,101 @@ body.dark-mode .btn-secondary:hover { background: #333; }
   justify-content: space-between;
 }
 
-/* The Editor Area */
+/* The Editor Area - IDE Feel */
 .editor-container {
   position: relative;
   background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .editor {
-  min-height: 180px;
-  max-height: 300px;
-  padding: 16px;
+  min-height: 200px;
+  max-height: 320px;
+  padding: 24px;
   outline: none;
   overflow-y: auto;
   color: var(--text-main);
-  font-size: 0.95rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  font-family: var(--font-inter);
+}
+
+.editor:focus {
+  background: rgba(var(--primary-soft), 0.02);
 }
 
 .editor:empty:before {
   content: attr(data-placeholder);
   color: var(--text-secondary);
-  pointer-events: none;
-  font-style: italic;
-  opacity: 0.6;
+  font-style: normal;
+  opacity: 0.5;
 }
 
 .char-count {
   position: absolute;
-  bottom: 8px;
-  right: 12px;
-  font-size: 0.75rem;
+  bottom: 12px;
+  right: 16px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   color: var(--text-secondary);
-  pointer-events: none;
+  background: var(--bg-app);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
 }
 
-/* Output Area */
+/* Output Area - The "Code Vault" Look */
 .output-area {
-  background: #fafafa;
-  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-app);
   padding: 0;
 }
-body.dark-mode .output-area { background: #161616; }
 
 .tabs {
   display: flex;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 12px;
   background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 4px;
 }
 
 .tab-btn {
   padding: 12px 16px;
   background: transparent;
   color: var(--text-secondary);
-  border-bottom: 2px solid transparent;
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
-  border-radius: 0;
+  border-bottom: 3px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  transition: all 0.2s ease;
 }
 
-.tab-btn:hover { color: var(--primary); }
+.tab-btn:hover { 
+  color: var(--primary); 
+  background: var(--primary-soft);
+}
+
 .tab-btn.active {
   color: var(--primary);
   border-bottom-color: var(--primary);
-  font-weight: 600;
 }
 
+/* Dark IDE Code Block */
 .code-block-wrapper {
   position: relative;
-  padding: 16px;
+  padding: 24px;
+  margin: 16px;
+  background: #0d1117; /* GitHub Dark style background */
+  border-radius: 12px;
+  border: 1px solid #30363d;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
 }
 
 pre {
-  background: transparent;
-  color: var(--text-main);
-  font-family: 'Menlo', 'Monaco', monospace;
+  color: #e6edf3;
+  font-family: 'Fira Code', 'JetBrains Mono', 'Menlo', monospace;
   font-size: 0.85rem;
   white-space: pre-wrap;
   word-break: break-word;
@@ -224,18 +250,30 @@ pre {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: white;
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-sm);
-  padding: 6px 10px;
-  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 6px;
   opacity: 0;
-  transition: opacity 0.2s;
+  transform: translateY(5px);
+  transition: all 0.2s ease;
 }
-body.dark-mode .copy-btn-floating { background: #333; border-color: #444; }
 
-.code-block-wrapper:hover .copy-btn-floating { opacity: 1; }
+.code-block-wrapper:hover .copy-btn-floating { 
+  opacity: 1; 
+  transform: translateY(0);
+}
 
+.copy-btn-floating:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Animations */
 @keyframes slideUpFade {
   from { opacity: 0; transform: translate(-50%, 20px); }
   to { opacity: 1; transform: translate(-50%, 0); }
@@ -320,17 +358,17 @@ body.dark-mode .copy-btn-floating { background: #333; border-color: #444; }
   font-weight: 600;
 }
 
-/* Sidebar Drawer */
+/* --- High-End Sidebar (Vault) --- */
 .history-sidebar {
   position: fixed;
   top: 0;
-  right: -350px; /* Hidden by default */
-  width: 350px;
+  right: -400px; /* Wider for a more workspace feel */
+  width: 400px;
   height: 100vh;
   background: var(--bg-card);
-  box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+  box-shadow: -10px 0 50px rgba(0,0,0,0.15);
   z-index: 1000;
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--border-subtle);
@@ -341,25 +379,89 @@ body.dark-mode .copy-btn-floating { background: #333; border-color: #444; }
 }
 
 .sidebar-header {
-  padding: 20px;
+  padding: 24px;
+  background: var(--bg-card);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.sidebar-header h3 {
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.5px;
+}
+
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
+  padding: 20px;
+  background: var(--bg-app); /* Subtle contrast from the header */
 }
 
-/* History Cards */
-.history-item {
-  padding: 15px;
+/* Search Bar - Postman Style */
+.search-container {
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
   background: var(--bg-app);
-  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* Folders & Items */
+.folder-section {
   margin-bottom: 12px;
+}
+
+.folder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s;
+}
+
+.folder-header:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.folder-content {
+  padding-left: 16px;
+  margin-top: 8px;
+  border-left: 2px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  padding: 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -369,151 +471,131 @@ body.dark-mode .copy-btn-floating { background: #333; border-color: #444; }
 }
 
 .history-item:hover {
-  border-color: var(--primary);
-  transform: translateX(-5px);
-  background: var(--bg-card);
+  border-color: var(--border-focus);
   box-shadow: var(--shadow-sm);
-}
-
-.item-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  transform: translateX(4px);
 }
 
 .item-info strong {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-main);
   display: block;
+  margin-bottom: 2px;
 }
 
 .item-info span {
   font-size: 0.7rem;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
-.item-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
+/* Action Buttons */
 .action-btn.delete {
   background: transparent;
   color: var(--text-secondary);
-  padding: 5px;
+  padding: 6px;
+  border-radius: 6px;
+  opacity: 0; /* Hidden until hover */
+  transition: all 0.2s;
 }
 
-.action-btn.delete:hover {
-  color: var(--primary);
-}
-
-.load-icon {
-  color: var(--text-secondary);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.history-item:hover .load-icon {
+.history-item:hover .action-btn.delete,
+.folder-header:hover .action-btn.delete {
   opacity: 1;
 }
 
-.empty-state {
-  text-align: center;
-  padding-top: 50px;
-  color: var(--text-secondary);
-}
-
-
-/* --- Folder & Search UI --- */
-.search-container {
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-app);
-  color: var(--text-main);
-  font-size: 0.85rem;
-  outline: none;
-}
-
-.search-input:focus {
-  border-color: var(--primary);
-}
-
-.folder-section {
-  margin-bottom: 8px;
-}
-
-.folder-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: var(--bg-app);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--text-main);
-  transition: background 0.2s;
-}
-
-.folder-header:hover {
-  background: var(--border-subtle);
-}
-
-.folder-content {
-  padding-left: 12px;
-  margin-top: 4px;
-  border-left: 1px dashed var(--border-subtle);
+.action-btn.delete:hover {
+  background: #fee2e2;
+  color: #ef4444;
 }
 
 .add-folder-btn {
   width: 100%;
-  padding: 8px;
-  margin-top: 10px;
+  padding: 12px;
+  margin-top: 15px;
   background: transparent;
-  border: 1px dashed var(--border-subtle);
+  border: 1px dashed var(--border-focus);
   color: var(--text-secondary);
-  font-size: 0.75rem;
-  border-radius: var(--radius-sm);
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.2s;
 }
 
 .add-folder-btn:hover {
+  background: var(--bg-card);
   border-color: var(--primary);
   color: var(--primary);
 }
 
 .project-badge {
   font-size: 0.65rem;
-  background: var(--primary);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: 10px;
   margin-left: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-/* Modal for Project Selection */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+
+/* --- New SaaS Auth Layout --- */
+.split-screen {
+  display: flex;
+  min-height: calc(100vh - var(--header-height));
+  background: var(--bg-card);
+}
+
+.auth-visual-side {
+  flex: 1;
+  background: linear-gradient(135deg, #111 0%, #222 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+body.dark-mode .auth-visual-side {
+  background: linear-gradient(135deg, #000 0%, #111 100%);
+}
+
+.auth-form-side {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  padding: 40px;
+  background: var(--bg-card);
 }
 
-.save-modal {
-  background: var(--bg-card);
-  padding: 24px;
-  border-radius: var(--radius-lg);
-  width: 90%;
+.auth-illustration {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 40px;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4));
+}
+
+.auth-quote {
+  text-align: center;
   max-width: 400px;
+}
+
+.auth-quote h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  line-height: 1.2;
+}
+
+.auth-quote p {
+  color: #999;
+  font-size: 1.1rem;
+}
+
+/* Responsive adjustment */
+@media (max-width: 900px) {
+  .auth-visual-side { display: none; }
 }

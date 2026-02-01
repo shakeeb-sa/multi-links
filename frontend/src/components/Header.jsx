@@ -14,73 +14,83 @@ const Header = ({ darkMode, setDarkMode, openSidebar }) => {
 
   return (
     <header style={{
-      background: 'var(--bg-card)', 
+      background: 'rgba(var(--bg-card-rgb), 0.8)', 
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
       borderBottom: '1px solid var(--border-subtle)',
       position: 'sticky',
       top: 0,
-      zIndex: 100,
-      padding: '0.75rem 0'
+      zIndex: 1000,
+      height: 'var(--header-height)',
+      display: 'flex',
+      alignItems: 'center'
     }}>
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
         
         {/* Logo Section */}
         <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ 
-            background: 'var(--primary)', 
-            color: 'white', 
-            width: '36px', 
-            height: '36px', 
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <FaCode size={18} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', lineHeight: 1 }}>Multi-Link</h2>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '500' }}>Converter Tool</span>
+<div style={{ 
+  height: '150px', // Increased height
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}}>
+  <img 
+    src="assets/logo.png"  /* Removed the leading slash */
+    alt="Multi-Link Logo" 
+    style={{ 
+      height: '100%', 
+      width: 'auto', // Allows the logo to be as wide as it needs to be
+      objectFit: 'contain',
+      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' // Makes it pop
+    }} 
+  />
+</div>
+          <div style={{ display: 'none', '@media (min-width: 640px)': { display: 'block' } }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: '800', lineHeight: 1, letterSpacing: '-0.5px' }}>Multi-Link</h2>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Pro Workspace</span>
           </div>
         </Link>
 
         {/* Navigation Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           
           {token ? (
-            // LOGGED IN UI
             <>
-              <button className="btn-secondary" onClick={openSidebar} style={{ gap: '8px' }}>
+              <button className="btn-secondary" onClick={openSidebar} style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
                 <FaHistory /> Vault
               </button>
               
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '500' }}>
-                <FaUser size={12} /> {user?.username}
+              <div style={{ height: '24px', width: '1px', background: 'var(--border-subtle)', margin: '0 8px' }}></div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-app)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: 'white', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                  {user?.username?.charAt(0).toUpperCase()}
+                </div>
+                <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>{user?.username}</span>
               </div>
 
-              <button className="btn-icon" onClick={handleLogout} title="Logout">
+              <button className="btn-icon" onClick={handleLogout} title="Logout" style={{ marginLeft: '8px' }}>
                 <FaSignOutAlt size={18} />
               </button>
             </>
           ) : (
-            // LOGGED OUT UI
             <>
-              <Link to="/login" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '600', fontSize: '0.9rem' }}>
-                Login
+              <Link to="/login" style={{ textDecoration: 'none', color: 'var(--text-main)', fontWeight: '600', fontSize: '0.9rem', padding: '0 10px' }}>
+                Sign In
               </Link>
-              <Link to="/register" className="btn-primary" style={{ textDecoration: 'none', padding: '6px 16px' }}>
-                Join Free
+              <Link to="/register" className="btn-primary" style={{ textDecoration: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '0.85rem' }}>
+                Get Started — It's Free
               </Link>
             </>
           )}
           
-          <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 4px' }}></div>
-
           <button 
             onClick={() => setDarkMode(!darkMode)}
             className="btn-icon"
-            aria-label="Toggle Dark Mode"
+            style={{ marginLeft: '8px', background: 'var(--bg-app)', border: '1px solid var(--border-subtle)' }}
           >
-            {darkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
+            {darkMode ? <FaSun size={16} /> : <FaMoon size={16} />}
           </button>
         </div>
       </div>

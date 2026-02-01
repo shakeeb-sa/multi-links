@@ -104,26 +104,60 @@ const HistorySidebar = ({ isOpen, onClose, onSelect, showToast }) => {
 
       <div className="sidebar-content">
         {loading ? (
-          <p className="status-text">Loading vault...</p>
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Synchronizing vault...</p>
+          </div>
         ) : searchTerm ? (
-          // --- SEARCH RESULTS VIEW ---
+          /* --- SEARCH RESULTS VIEW --- */
           <div>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '10px' }}>Search results:</p>
-            {filteredSnippets.map(snip => (
-              <div key={snip._id} className="history-item" onClick={() => onSelect(snip.content)}>
-                <div className="item-info">
-                  <strong>{snip.title} <span className="project-badge">{snip.projectId?.name || 'Project'}</span></strong>
-                  <span>{new Date(snip.createdAt).toLocaleDateString()}</span>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '16px', fontWeight: '700', textTransform: 'uppercase' }}>
+              Search results ({filteredSnippets.length})
+            </p>
+            {filteredSnippets.length === 0 ? (
+              <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-secondary)', padding: '20px' }}>No matches found.</p>
+            ) : (
+              filteredSnippets.map(snip => (
+                <div key={snip._id} className="history-item" onClick={() => onSelect(snip.content)}>
+                  <div className="item-info">
+                    <strong>
+                      {snip.title} 
+                      <span className="project-badge">{snip.projectId?.name || 'Project'}</span>
+                    </strong>
+                    <span>{new Date(snip.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <button className="action-btn delete" onClick={(e) => deleteSnippet(snip._id, e)}>
+                    <FaTrash size={12} />
+                  </button>
                 </div>
-                <button className="action-btn delete" onClick={(e) => deleteSnippet(snip._id, e)}>
-                  <FaTrash size={12} />
-                </button>
-              </div>
-            ))}
+              ))
+            )}
+          </div>
+        ) : projects.length === 0 ? (
+          /* --- EMPTY STATE VIEW --- */
+          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <img 
+              src="https://illustrations.popsy.co/white/abstract-art-5.svg" 
+              alt="Empty Vault" 
+              style={{ width: '160px', marginBottom: '24px', opacity: 0.6 }} 
+            />
+            <h4 style={{ color: 'var(--text-main)', marginBottom: '8px', fontSize: '1rem' }}>Your Vault is Empty</h4>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+              Create a folder to start organizing your link snippets.
+            </p>
+            <button className="add-folder-btn" onClick={addFolder} style={{ marginTop: '20px', borderStyle: 'solid', background: 'var(--bg-card)' }}>
+              <FaPlus size={10} /> Create First Folder
+            </button>
           </div>
         ) : (
-          // --- FOLDER VIEW ---
+          /* --- FOLDER VIEW --- */
           <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>Folders</p>
+              <button onClick={addFolder} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>
+                <FaPlus size={10} /> ADD
+              </button>
+            </div>
+
             {projects.map(proj => (
               <div key={proj._id} className="folder-section">
                 <div className="folder-header" onClick={() => toggleFolder(proj._id)}>
@@ -138,23 +172,25 @@ const HistorySidebar = ({ isOpen, onClose, onSelect, showToast }) => {
                 
                 {expandedFolders[proj._id] && (
                   <div className="folder-content">
-                    {snippets.filter(s => (s.projectId?._id || s.projectId) === proj._id).map(snip => (
-                      <div key={snip._id} className="history-item" onClick={() => onSelect(snip.content)}>
-                        <div className="item-info">
-                          <strong>{snip.title}</strong>
+                    {snippets.filter(s => (s.projectId?._id || s.projectId) === proj._id).length === 0 ? (
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', padding: '10px', textAlign: 'center' }}>Empty Folder</p>
+                    ) : (
+                      snippets.filter(s => (s.projectId?._id || s.projectId) === proj._id).map(snip => (
+                        <div key={snip._id} className="history-item" onClick={() => onSelect(snip.content)}>
+                          <div className="item-info">
+                            <strong>{snip.title}</strong>
+                            <span>{new Date(snip.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <button className="action-btn delete" onClick={(e) => deleteSnippet(snip._id, e)}>
+                            <FaTrash size={10} />
+                          </button>
                         </div>
-                        <button className="action-btn delete" onClick={(e) => deleteSnippet(snip._id, e)}>
-                          <FaTrash size={10} />
-                        </button>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 )}
               </div>
             ))}
-            <button className="add-folder-btn" onClick={addFolder}>
-              <FaPlus size={10} /> New Folder
-            </button>
           </>
         )}
       </div>

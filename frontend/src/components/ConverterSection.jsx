@@ -200,7 +200,7 @@ const saveSnippet = async () => {
       </div>
 
       {formats && (
-        <div className="output-area">
+        <div className="output-area" style={{ background: 'var(--bg-app)', borderBottomLeftRadius: '12px', borderBottomRightRadius: '12px' }}>
           <div className="tabs">
             {['html', 'markdown', 'bbcode', 'raw', 'refmd'].map(tab => (
               <button 
@@ -214,7 +214,12 @@ const saveSnippet = async () => {
           </div>
 
           <div className="code-block-wrapper">
-            <pre onClick={handleCopy}>{formats[activeTab]}</pre>
+            <div style={{ position: 'absolute', top: '8px', left: '12px', display: 'flex', gap: '5px' }}>
+               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff5f56' }}></div>
+               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffbd2e' }}></div>
+               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#27c93f' }}></div>
+            </div>
+            <pre style={{ marginTop: '10px' }} onClick={handleCopy}>{formats[activeTab]}</pre>
             <button className="copy-btn-floating" onClick={handleCopy}>
               <FaCopy /> Copy
             </button>
