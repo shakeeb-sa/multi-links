@@ -45,17 +45,14 @@ const Footer = () => {
         <div>
           <h4 style={{ color: 'var(--text-main)', marginBottom: '20px', fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>Developer</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <a href="https://github.com/your-username" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <a href="https://github.com/shakeeb-sa/" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FaGithub /> GitHub
             </a>
-            <a href="https://linkedin.com/in/your-profile" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <a href="https://pk.linkedin.com/in/shakeeb-ahmed-034093370" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FaLinkedin /> LinkedIn
             </a>
-            <a href="https://your-portfolio.com" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaBriefcase /> Portfolio
-            </a>
-            <a href="mailto:your-email@example.com" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaEnvelope /> Email Support
+            <a href="shakeeb.sa.ahmed@gmail.com" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaEnvelope /> Contact Email
             </a>
           </div>
         </div>
@@ -68,12 +65,14 @@ const Footer = () => {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '10px',
         fontSize: '0.8rem'
       }}>
-        <p>&copy; {year} Multi-Link Converter. All rights reserved.</p>
+        <p>&copy; {year} Multi Link. Made by <b>Shakeeb Ahmed</b>.</p>
         <div style={{ display: 'flex', gap: '20px' }}>
-          <span>Privacy Policy</span>
-          <span>Terms of Service</span>
+          <span>Privacy</span>
+          <span>Terms</span>
         </div>
       </div>
     </footer>

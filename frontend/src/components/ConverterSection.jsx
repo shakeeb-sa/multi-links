@@ -8,7 +8,32 @@ const ConverterSection = ({ id, showToast, loadContent }) => {
   const [formats, setFormats] = useState(null);
   const [activeTab, setActiveTab] = useState('html');
   const [linkCount, setLinkCount] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalValue, setModalValue] = useState('');
+  
+  // Refs
   const editorRef = useRef(null);
+  const savedRange = useRef(null); 
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        if (document.activeElement === editorRef.current) {
+          e.preventDefault();
+          const selection = window.getSelection();
+          if (!selection.rangeCount || selection.isCollapsed) {
+            showToast("Please select some text first", "info");
+          } else {
+            // SAVE the range here too!
+            savedRange.current = selection.getRangeAt(0); 
+            setIsModalOpen(true);
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showToast]); // Added showToast to dependencies
   
   const { token } = useContext(AuthContext);
 
@@ -108,20 +133,42 @@ const saveSnippet = async () => {
     }
 };
 
+  const confirmLink = () => {
+    if (modalValue && isValidURL(modalValue)) {
+      // 1. Get the selection object
+      const selection = window.getSelection();
+      
+      // 2. Focus the editor FIRST
+      editorRef.current.focus(); 
+
+      // 3. Restore the highlighted range
+      if (savedRange.current) {
+        selection.removeAllRanges();
+        selection.addRange(savedRange.current);
+      }
+
+      // 4. Execute the command while the range is active
+      document.execCommand('createLink', false, modalValue);
+      
+      // 5. Cleanup: Close modal AFTER the command is done
+      setModalValue('');
+      setIsModalOpen(false);
+      savedRange.current = null; 
+      handleInput(); 
+    } else {
+      showToast("Please enter a valid URL", "error");
+    }
+  };
+
   const makeLink = () => {
     const selection = window.getSelection();
     if (!selection.rangeCount || selection.isCollapsed) {
       showToast("Please select some text first", "info");
       return;
     }
-
-    const url = prompt("Enter URL:");
-    if (url && isValidURL(url)) {
-      document.execCommand('createLink', false, url);
-      handleInput(); 
-    } else if (url) {
-      showToast("Invalid URL format", "error");
-    }
+    // SAVE the selection range here
+    savedRange.current = selection.getRangeAt(0); 
+    setIsModalOpen(true);
   };
 
   const cleanEditor = () => {
@@ -223,6 +270,33 @@ const saveSnippet = async () => {
             <button className="copy-btn-floating" onClick={handleCopy}>
               <FaCopy /> Copy
             </button>
+          </div>
+        </div>
+      )}
+
+            {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Insert Hyperlink</h3>
+            <p>Paste the URL you want to attach to your selected text.</p>
+            <input 
+              autoFocus
+              className="modal-input"
+              placeholder="https://example.com"
+              value={modalValue}
+              onChange={(e) => setModalValue(e.target.value)}
+              onKeyDown={(e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();   // Stops the "New Line" action
+    e.stopPropagation();  // Stops the event from reaching the editor
+    confirmLink();
+  }
+}}
+            />
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => {setIsModalOpen(false); setModalValue('');}}>Cancel</button>
+              <button className="btn-primary" onClick={confirmLink}>Apply Link</button>
+            </div>
           </div>
         </div>
       )}

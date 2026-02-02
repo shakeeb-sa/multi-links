@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../api';
 
@@ -6,6 +6,17 @@ const Register = ({ showToast }) => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+    useEffect(() => {
+    // Updates the Browser Tab Title
+    document.title = "Create Account | Multi Link";
+    
+    // Updates the Meta Description for SEO
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Join Multi Link to organize, convert, and sync your link snippets across all your devices for a professional workflow.");
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +58,7 @@ const Register = ({ showToast }) => {
       <div className="auth-form-side">
         <div className="auth-card" style={{ border: 'none', boxShadow: 'none', textAlign: 'left', maxWidth: '400px' }}>
           <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '8px' }}>Create Account</h2>
-          <p style={{ marginBottom: '32px' }}>Start your journey with our professional link tools.</p>
+          <p style={{ marginBottom: '32px' }}>Start your journey with Multi Link professional tools.</p>
           
           <form onSubmit={handleSubmit}>
             <div className="form-group">

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../api';
 import { AuthContext } from '../context/AuthContext';
@@ -8,6 +8,17 @@ const Login = ({ showToast }) => {
   const [loading, setLoading] = useState(false);
   const { setToken, setUser } = useContext(AuthContext);
   const navigate = useNavigate();
+
+    useEffect(() => {
+    // Updates the Browser Tab Title
+    document.title = "Sign In | Multi Link";
+    
+    // Updates the Meta Description for SEO
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Log in to your Multi Link account to access your professional link vault and history.");
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,7 +92,7 @@ const Login = ({ showToast }) => {
           </form>
 
           <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)', fontSize: '0.9rem' }}>
-            <p>New to Multi-Link? <Link to="/register" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>Create an account</Link></p>
+            <p>New to Multi Link? <Link to="/register" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>Create an account</Link></p>
           </div>
         </div>
       </div>

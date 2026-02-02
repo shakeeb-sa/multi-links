@@ -10,6 +10,8 @@ const HistorySidebar = ({ isOpen, onClose, onSelect, showToast }) => {
   const [loading, setLoading] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState({});
   const { token } = useContext(AuthContext);
+    const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
 
   const fetchData = async () => {
     if (!token) return;
@@ -36,17 +38,20 @@ const HistorySidebar = ({ isOpen, onClose, onSelect, showToast }) => {
     setExpandedFolders(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const addFolder = async () => {
-    const name = prompt("Enter folder name:");
-    if (!name) return;
+  const confirmAddFolder = async () => {
+    if (!newFolderName) return;
     try {
-      const { data } = await API.post('/projects', { name });
+      const { data } = await API.post('/projects', { name: newFolderName });
       setProjects([data, ...projects]);
-      showToast("Folder created", "success");
+      setIsFolderModalOpen(false);
+      setNewFolderName('');
+      showToast("Folder created successfully", "success");
     } catch (err) {
       showToast("Failed to create folder", "error");
     }
   };
+
+  const addFolder = () => setIsFolderModalOpen(true);
 
   const deleteFolder = async (id, e) => {
     e.stopPropagation();
@@ -194,6 +199,27 @@ const HistorySidebar = ({ isOpen, onClose, onSelect, showToast }) => {
           </>
         )}
       </div>
+
+            {isFolderModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Create New Folder</h3>
+            <p>Give your link collection a name to stay organized.</p>
+            <input 
+              autoFocus
+              className="modal-input" 
+              placeholder="e.g., Rotation Manager"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && confirmAddFolder()}
+            />
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setIsFolderModalOpen(false)}>Cancel</button>
+              <button className="btn-primary" onClick={confirmAddFolder}>Create Folder</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

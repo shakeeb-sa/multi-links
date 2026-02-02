@@ -27,6 +27,10 @@ function App() {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
+    useEffect(() => {
+    document.title = "Multi Link | Professional Link Converter & Vault";
+  }, []);
+
   return (
     <AuthProvider>
       {/* Basename is removed because HashRouter handles the path after the # symbol */}
@@ -81,18 +85,17 @@ function App() {
   </p>
 </div>
                   
-                  <div style={{ 
+<div className="converter-grid" style={{ 
   display: 'grid', 
   gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 550px), 1fr))', 
   gap: '32px',
   paddingBottom: '4rem'
 }}>
-                    {/* id=1 is the primary section that receives loaded content from the vault */}
-                    <ConverterSection id={1} showToast={triggerToast} loadContent={loadContent} />
-                    <ConverterSection id={2} showToast={triggerToast} />
-                    <ConverterSection id={3} showToast={triggerToast} />
-                    <ConverterSection id={4} showToast={triggerToast} />
-                  </div>
+  <ConverterSection id={1} showToast={triggerToast} loadContent={loadContent} />
+  <ConverterSection id={2} showToast={triggerToast} />
+  <ConverterSection id={3} showToast={triggerToast} />
+  <ConverterSection id={4} showToast={triggerToast} />
+</div>
                 </>
               } />
 
