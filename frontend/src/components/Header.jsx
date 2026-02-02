@@ -63,12 +63,42 @@ const Header = ({ darkMode, setDarkMode, openSidebar }) => {
               
               <div style={{ height: '24px', width: '1px', background: 'var(--border-subtle)', margin: '0 8px' }}></div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-app)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-subtle)' }}>
-                <div style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: 'white', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                  {user?.username?.charAt(0).toUpperCase()}
-                </div>
-                <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>{user?.username}</span>
-              </div>
+<div style={{ 
+  display: 'flex', 
+  alignItems: 'center', 
+  gap: '10px', 
+  background: 'var(--bg-app)', 
+  padding: '4px 12px 4px 6px', 
+  borderRadius: '10px', 
+  border: '1px solid var(--border-subtle)' 
+}}>
+  {/* Professional Square Avatar */}
+  <div style={{ 
+    width: '28px', 
+    height: '28px', 
+    background: 'var(--primary)', 
+    color: 'white', 
+    borderRadius: '6px', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    fontSize: '0.8rem', 
+    fontWeight: '800',
+    boxShadow: '0 2px 4px rgba(230, 43, 30, 0.2)' 
+  }}>
+    {user?.username?.charAt(0).toUpperCase()}
+  </div>
+  
+  {/* Username */}
+  <span style={{ 
+    fontSize: '0.85rem', 
+    fontWeight: '700', 
+    color: 'var(--text-main)',
+    letterSpacing: '-0.2px'
+  }}>
+    {user?.username}
+  </span>
+</div>
 
               <button className="btn-icon" onClick={handleLogout} title="Logout" style={{ marginLeft: '8px' }}>
                 <FaSignOutAlt size={18} />

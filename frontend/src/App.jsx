@@ -50,21 +50,7 @@ function App() {
               {/* Dashboard Route */}
               <Route path="/" element={
                 <>
-                  <div style={{ textAlign: 'center', padding: '4rem 0 5rem 0' }}>
-  <div style={{ 
-    display: 'inline-block', 
-    padding: '6px 16px', 
-    background: 'var(--primary-soft)', 
-    color: 'var(--primary)', 
-    borderRadius: '20px', 
-    fontSize: '0.8rem', 
-    fontWeight: '700', 
-    marginBottom: '20px',
-    textTransform: 'uppercase',
-    letterSpacing: '1px'
-  }}>
-    🚀 Version 2.0 Now Live
-  </div>
+<div style={{ textAlign: 'center', padding: '5rem 0 4rem 0' }}>
   <h1 style={{ 
     fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', 
     color: 'var(--text-main)', 

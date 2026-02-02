@@ -731,3 +731,21 @@ body.dark-mode .auth-visual-side {
   border-color: var(--primary);
   outline: none;
 }
+
+/* --- Tech Stack Hover Effects --- */
+.tech-stack-icons svg {
+  transition: all 0.3s ease;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.tech-stack-icons svg:hover {
+  filter: grayscale(0);
+  opacity: 1;
+  transform: translateY(-3px);
+}
+
+.icon-mongo:hover { color: #47A248; }
+.icon-express:hover { color: var(--text-main); }
+.icon-react:hover { color: #61DAFB; }
+.icon-node:hover { color: #339933; }

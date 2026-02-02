@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaGithub, FaLinkedin, FaBriefcase, FaEnvelope, FaCode, FaExternalLinkAlt } from 'react-icons/fa';
+import { SiMongodb, SiExpress, SiReact, SiNodedotjs } from 'react-icons/si';
 
 const Footer = () => {
   const year = new Date().getFullYear();
@@ -22,7 +23,6 @@ const Footer = () => {
         {/* Column 1: Brand */}
         <div style={{ gridColumn: 'span 1.5' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)', marginBottom: '15px' }}>
-            <FaCode size={24} color="var(--primary)" />
             <h3 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Multi Link</h3>
           </div>
           <p style={{ fontSize: '0.9rem', lineHeight: '1.6', maxWidth: '280px' }}>
@@ -61,21 +61,55 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Bottom Bar */}
+      {/* Tech Stack & Bottom Bar */}
       <div className="container" style={{ 
-        paddingTop: '20px', 
-        borderTop: '1px solid var(--border-subtle)', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '15px',
-        fontSize: '0.8rem'
+        paddingTop: '30px', 
+        borderTop: '1px solid var(--border-subtle)',
+        marginTop: '20px'
       }}>
-        <p>&copy; {year} <b>Multi Link</b>. Made with by <b>Shakeeb Ahmed</b>.</p>
-        <div style={{ display: 'flex', gap: '20px', fontWeight: '500' }}>
-          <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
-          <span style={{ cursor: 'pointer' }}>Terms of Service</span>
+        
+        {/* MERN Stack Row */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          gap: '20px', 
+          marginBottom: '20px',
+          color: 'var(--text-secondary)',
+          fontSize: '0.8rem',
+          fontWeight: '600',
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
+        }}>
+          <span>Built with MERN Stack:</span>
+          <div style={{ display: 'flex', gap: '15px', fontSize: '1.2rem' }} className="tech-stack-icons">
+            <SiMongodb title="MongoDB" style={{ cursor: 'help' }} className="icon-mongo" />
+            <SiExpress title="Express.js" style={{ cursor: 'help' }} className="icon-express" />
+            <SiReact title="React" style={{ cursor: 'help' }} className="icon-react" />
+            <SiNodedotjs title="Node.js" style={{ cursor: 'help' }} className="icon-node" />
+          </div>
+        </div>
+
+        {/* Copyright Bar */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '15px',
+          fontSize: '0.85rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          
+            <p style={{ margin: 0 }}>
+              &copy; {year} <b>Multi Link</b>. Made with by <b>Shakeeb Ahmed</b>.
+            </p>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '20px', fontWeight: '600' }}>
+            <span style={{ cursor: 'pointer', color: 'var(--text-secondary)' }}>Privacy Policy</span>
+            <span style={{ cursor: 'pointer', color: 'var(--text-secondary)' }}>Terms of Service</span>
+          </div>
         </div>
       </div>
     </footer>
