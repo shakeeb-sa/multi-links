@@ -23,7 +23,7 @@ const Footer = () => {
         <div style={{ gridColumn: 'span 1.5' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)', marginBottom: '15px' }}>
             <FaCode size={24} color="var(--primary)" />
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Multi-Link</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Multi Link</h3>
           </div>
           <p style={{ fontSize: '0.9rem', lineHeight: '1.6', maxWidth: '280px' }}>
             The professional toolset for formatting and managing link lists instantly. Built for developers and SEO specialists.
@@ -45,11 +45,14 @@ const Footer = () => {
         <div>
           <h4 style={{ color: 'var(--text-main)', marginBottom: '20px', fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>Developer</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <a href="https://github.com/shakeeb-sa/" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <a href="https://github.com/shakeeb-sa" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FaGithub /> GitHub
             </a>
             <a href="https://pk.linkedin.com/in/shakeeb-ahmed-034093370" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FaLinkedin /> LinkedIn
+            </a>
+            <a href="https://shakeeb-sa.github.io/" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaExternalLinkAlt size={12} /> Portfolio
             </a>
             <a href="shakeeb.sa.ahmed@gmail.com" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FaEnvelope /> Contact Email
@@ -66,13 +69,13 @@ const Footer = () => {
         justifyContent: 'space-between', 
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '10px',
+        gap: '15px',
         fontSize: '0.8rem'
       }}>
-        <p>&copy; {year} Multi Link. Made by <b>Shakeeb Ahmed</b>.</p>
-        <div style={{ display: 'flex', gap: '20px' }}>
-          <span>Privacy</span>
-          <span>Terms</span>
+        <p>&copy; {year} <b>Multi Link</b>. Made with by <b>Shakeeb Ahmed</b>.</p>
+        <div style={{ display: 'flex', gap: '20px', fontWeight: '500' }}>
+          <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
+          <span style={{ cursor: 'pointer' }}>Terms of Service</span>
         </div>
       </div>
     </footer>

@@ -43,15 +43,22 @@ const ConverterSection = ({ id, showToast, loadContent }) => {
 
   // Effect to load content from the Vault (History Sidebar)
   useEffect(() => {
-    // Check if loadContent exists and specifically target Section 1
-    if (id === 1 && loadContent?.text && editorRef.current) {
+    // Now it checks if the targetId matches THIS section's id
+    if (loadContent?.targetId === id && loadContent?.text && editorRef.current) {
       editorRef.current.innerHTML = loadContent.text;
       handleInput(); // Re-generate formats (Markdown, HTML, etc.)
       
-      // Scroll to top of editor if it's long content
+      // Scroll to top of editor
       editorRef.current.scrollTop = 0;
+      
+      // Visual feedback: highlight the editor briefly
+      editorRef.current.style.transition = 'background 0.5s';
+      editorRef.current.style.background = 'var(--primary-soft)';
+      setTimeout(() => {
+        editorRef.current.style.background = 'transparent';
+      }, 500);
     }
-  }, [loadContent, id]); // Added id to dependencies
+  }, [loadContent, id]); 
 
   const stripFragments = (str) => str.replace(/<!--StartFragment-->|<!--EndFragment-->/g, "");
 

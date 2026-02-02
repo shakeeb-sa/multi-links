@@ -19,6 +19,8 @@ function App() {
   const [toast, setToast] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loadContent, setLoadContent] = useState(null); // Holds content selected from History
+    const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
+  const [pendingContent, setPendingContent] = useState('');
 
   const triggerToast = (message, type = 'success') => setToast({ message, type });
 
@@ -92,9 +94,9 @@ function App() {
   paddingBottom: '4rem'
 }}>
   <ConverterSection id={1} showToast={triggerToast} loadContent={loadContent} />
-  <ConverterSection id={2} showToast={triggerToast} />
-  <ConverterSection id={3} showToast={triggerToast} />
-  <ConverterSection id={4} showToast={triggerToast} />
+  <ConverterSection id={2} showToast={triggerToast} loadContent={loadContent} />
+  <ConverterSection id={3} showToast={triggerToast} loadContent={loadContent} />
+  <ConverterSection id={4} showToast={triggerToast} loadContent={loadContent} />
 </div>
                 </>
               } />
@@ -115,19 +117,54 @@ function App() {
             isOpen={isSidebarOpen} 
             onClose={() => setIsSidebarOpen(false)} 
             showToast={triggerToast}
-            onSelect={(content) => {
-              // We wrap the content in an object with a timestamp/ID 
-              // to force the child component to see a "new" prop every time.
-              setLoadContent({ 
-                text: content, 
-                version: Date.now() 
-              }); 
-              setIsSidebarOpen(false);
-              triggerToast("Loaded from vault", "success");
-            }}
+onSelect={(content) => {
+  setPendingContent(content); // Store the text temporarily
+  setIsLoadModalOpen(true);    // Open the selection modal
+  setIsSidebarOpen(false);     // Close the sidebar
+}}
           />
 
           {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+                  {/* Load to Section Modal */}
+      {isLoadModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center' }}>
+            <h3>Load to Workspace</h3>
+            <p>Select which section you want to load this snippet into:</p>
+            
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '1fr 1fr', 
+              gap: '12px', 
+              marginTop: '20px' 
+            }}>
+              {[1, 2, 3, 4].map(num => (
+                <button 
+                  key={num}
+                  className="btn-secondary"
+                  style={{ padding: '15px', fontSize: '1rem', fontWeight: '700' }}
+                  onClick={() => {
+                    setLoadContent({ text: pendingContent, targetId: num, version: Date.now() });
+                    setIsLoadModalOpen(false);
+                    triggerToast(`Loaded into Section ${num}`, "success");
+                  }}
+                >
+                  Section {num}
+                </button>
+              ))}
+            </div>
+            
+            <button 
+              className="btn-icon" 
+              style={{ marginTop: '20px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}
+              onClick={() => setIsLoadModalOpen(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
         </div>
       </Router>
     </AuthProvider>
