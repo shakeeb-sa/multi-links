@@ -10,6 +10,10 @@ const ConverterSection = ({ id, showToast, loadContent }) => {
   const [linkCount, setLinkCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalValue, setModalValue] = useState('');
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [saveTitle, setSaveTitle] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState('');
+  const [availableProjects, setAvailableProjects] = useState([]);
   
   // Refs
   const editorRef = useRef(null);
@@ -82,56 +86,48 @@ const ConverterSection = ({ id, showToast, loadContent }) => {
     handleInput();
   };
 
-const saveSnippet = async () => {
+  const saveSnippet = async () => {
     if (!token) {
-        showToast("Please login to save snippets", "info");
-        return;
+      showToast("Please login to save snippets", "info");
+      return;
     }
     if (!editorRef.current?.innerHTML || editorRef.current.innerHTML === "<br>") {
-        showToast("Editor is empty", "info");
-        return;
+      showToast("Editor is empty", "info");
+      return;
     }
 
     try {
-        // 1. Fetch Projects to show in selection
-        const { data: projects } = await API.get('/projects');
-        
-        if (projects.length === 0) {
-            const createNew = window.confirm("No folders found. Create your first folder?");
-            if (createNew) {
-                const folderName = prompt("Enter folder name (e.g., RotationManager):");
-                if (!folderName) return;
-                const { data: newProj } = await API.post('/projects', { name: folderName });
-                projects.push(newProj);
-            } else {
-                return;
-            }
-        }
-
-        // 2. Simple prompt-based selection for now (to keep it stable)
-        const projectList = projects.map((p, i) => `${i + 1}. ${p.name}`).join('\n');
-        const choice = prompt(`Where to save?\n${projectList}\n\nEnter the number:`);
-        
-        const selectedProject = projects[parseInt(choice) - 1];
-        if (!selectedProject) {
-            showToast("Invalid selection", "error");
-            return;
-        }
-
-        const title = prompt("Enter a title for this snippet:");
-        if (!title) return;
-
-        await API.post('/snippets', { 
-            title, 
-            content: editorRef.current.innerHTML,
-            projectId: selectedProject._id // Important: Link to folder
-        });
-        
-        showToast(`Saved to ${selectedProject.name}`, "success");
+      const { data } = await API.get('/projects');
+      setAvailableProjects(data);
+      if (data.length > 0) {
+        setSelectedFolder(data[0]._id); // Default to first folder
+      }
+      setIsSaveModalOpen(true);
     } catch (err) {
-        showToast("Failed to save", "error");
+      showToast("Failed to load folders", "error");
     }
-};
+  };
+
+    const confirmSave = async () => {
+    if (!saveTitle || !selectedFolder) {
+      showToast("Please enter a title and select a folder", "error");
+      return;
+    }
+
+    try {
+      await API.post('/snippets', { 
+        title: saveTitle, 
+        content: editorRef.current.innerHTML,
+        projectId: selectedFolder 
+      });
+      
+      showToast(`Saved successfully!`, "success");
+      setIsSaveModalOpen(false);
+      setSaveTitle('');
+    } catch (err) {
+      showToast("Failed to save", "error");
+    }
+  };
 
   const confirmLink = () => {
     if (modalValue && isValidURL(modalValue)) {
@@ -296,6 +292,53 @@ const saveSnippet = async () => {
             <div className="modal-actions">
               <button className="btn-secondary" onClick={() => {setIsModalOpen(false); setModalValue('');}}>Cancel</button>
               <button className="btn-primary" onClick={confirmLink}>Apply Link</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+            {/* Save to Vault Modal */}
+      {isSaveModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Save to Vault</h3>
+            <p>Enter a title and choose a folder to organize this snippet.</p>
+            
+            <label className="modal-label">Snippet Title</label>
+            <input 
+              autoFocus
+              className="modal-input"
+              placeholder="e.g., Summer Campaign Links"
+              value={saveTitle}
+              onChange={(e) => setSaveTitle(e.target.value)}
+            />
+
+            <label className="modal-label">Select Folder</label>
+            {availableProjects.length > 0 ? (
+              <select 
+                className="modal-select"
+                value={selectedFolder}
+                onChange={(e) => setSelectedFolder(e.target.value)}
+              >
+                {availableProjects.map(proj => (
+                  <option key={proj._id} value={proj._id}>{proj.name}</option>
+                ))}
+              </select>
+            ) : (
+              <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginBottom: '20px' }}>
+                No folders found. Please create one in the Vault sidebar first.
+              </p>
+            )}
+
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setIsSaveModalOpen(false)}>Cancel</button>
+              <button 
+                className="btn-primary" 
+                onClick={confirmSave}
+                disabled={availableProjects.length === 0}
+              >
+                Confirm Save
+              </button>
             </div>
           </div>
         </div>
